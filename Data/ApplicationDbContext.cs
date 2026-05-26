@@ -1,8 +1,9 @@
-﻿namespace CleanLife.Web.Data;
+namespace CleanLife.Web.Data;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using CleanLife.Web.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<User>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }

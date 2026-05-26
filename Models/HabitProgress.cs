@@ -9,7 +9,7 @@
         public bool IsCompleted { get; set; }
 
         public int HabitId { get; set; }
-        public Habit Habit { get; set; }
+        public Habit? Habit { get; set; }
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

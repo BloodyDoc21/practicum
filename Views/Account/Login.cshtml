@@ -1,0 +1,24 @@
+@model CleanLife.Web.ViewModels.LoginViewModel
+
+<h1>Вход</h1>
+
+<form asp-action="Login">
+    <div>
+        <label asp-for="Username"></label>
+        <input asp-for="Username" />
+    </div>
+
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" />
+    </div>
+
+    <div>
+        <input asp-for="RememberMe" />
+        <label asp-for="RememberMe"></label>
+    </div>
+
+    <button type="submit">
+        Войти
+    </button>
+</form>

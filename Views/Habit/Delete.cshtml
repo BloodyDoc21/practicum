@@ -1,0 +1,17 @@
+@model CleanLife.Web.Models.Habit
+
+<h1>Удаление привычки</h1>
+
+<h3>Вы уверены?</h3>
+
+<div>
+    <strong>@Model.Name</strong>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit">
+        Удалить
+    </button>
+</form>

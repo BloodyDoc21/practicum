@@ -1,43 +1,59 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using CleanLife.Web.Data;
 using CleanLife.Web.Models;
-using Microsoft.EntityFrameworkCore;
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
+using CleanLife.Web.Services;
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=cleanlife.db"));
+
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IHabitService, HabitService>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+});
 
 var app = builder.Build();
 
-    
-
-SeedData(app.Services);
-
-app.Run();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Habit}/{action=Index}/{id?}");
+
+SeedData(app.Services);
+
+app.Run();
 
 static void SeedData(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
+
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     context.Database.Migrate();
@@ -47,27 +63,27 @@ static void SeedData(IServiceProvider serviceProvider)
 
     var user = new User
     {
-        Username = "testuser",
-        Email = "test@example.com",
-        PasswordHash = "hash"
+        UserName = "testuser",
+        Email = "test@example.com"
     };
-
-    context.Users.Add(user);
-    context.SaveChanges();
 
     var habits = new[]
     {
-        new Habit { Name = "Не курить", GoalDays = 30, UserId = user.Id },
-        new Habit { Name = "Бегать", GoalDays = 14, UserId = user.Id }
-    };
+        new Habit
+        {
+            Name = "Не курить",
+            GoalDays = 30,
+            UserId = user.Id,
+            Status = "Active"
+        },
 
-    context.Habits.AddRange(habits);
-    context.SaveChanges();
-
-    var progress = new[]
-    {
-        new HabitProgress { HabitId = habits[0].Id, Date = DateTime.UtcNow, IsCompleted = true },
-        new HabitProgress { HabitId = habits[1].Id, Date = DateTime.UtcNow, IsCompleted = false }
+        new Habit
+        {
+            Name = "Бегать",
+            GoalDays = 14,
+            UserId = user.Id,
+            Status = "Active"
+        }
     };
 
     using var transaction = context.Database.BeginTransaction();
@@ -77,10 +93,31 @@ static void SeedData(IServiceProvider serviceProvider)
         context.Users.Add(user);
         context.SaveChanges();
 
+        habits[0].UserId = user.Id;
+        habits[1].UserId = user.Id;
+
         context.Habits.AddRange(habits);
         context.SaveChanges();
 
+        var progress = new[]
+        {
+            new HabitProgress
+            {
+                HabitId = habits[0].Id,
+                Date = DateTime.UtcNow,
+                IsCompleted = true
+            },
+
+            new HabitProgress
+            {
+                HabitId = habits[1].Id,
+                Date = DateTime.UtcNow,
+                IsCompleted = false
+            }
+        };
+
         context.HabitProgresses.AddRange(progress);
+
         context.SaveChanges();
 
         transaction.Commit();
@@ -90,11 +127,4 @@ static void SeedData(IServiceProvider serviceProvider)
         transaction.Rollback();
         throw;
     }
-
-    context.HabitProgresses.AddRange(progress);
-    context.SaveChanges();
 }
-
-
-
-

@@ -1,0 +1,30 @@
+@model CleanLife.Web.Models.Habit
+
+<h1>Создать привычку</h1>
+
+<form asp-action="Create">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div>
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+    </div>
+
+    <div>
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div>
+        <label asp-for="GoalDays"></label>
+        <input asp-for="GoalDays" />
+    </div>
+
+    <div>
+        <label asp-for="Status"></label>
+        <input asp-for="Status" />
+    </div>
+
+    <button type="submit">
+        Создать
+    </button>
+</form>
